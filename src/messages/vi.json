@@ -1,0 +1,42 @@
+{
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "retry": "Thử lại",
+    "home": "Trang chủ",
+    "about": "Giới thiệu",
+    "blog": "Tin tức",
+    "contact": "Liên hệ",
+    "readMore": "Xem thêm",
+    "backToHome": "Quay về trang chủ"
+  },
+  "seo": {
+    "siteName": "Doanh Nghiệp",
+    "title": "Trang chủ",
+    "description": "Chào mừng đến với website doanh nghiệp của chúng tôi"
+  },
+  "home": {
+    "hero": {
+      "title": "Chào Mừng Đến Với Doanh Nghiệp Của Chúng Tôi",
+      "subtitle": "Xây dựng tương lai cùng nhau"
+    },
+    "features": {
+      "title": "Tính Năng Của Chúng Tôi",
+      "item1": "Giải Pháp Mở Rộng",
+      "item2": "Bảo Mật Doanh Nghiệp",
+      "item3": "Hỗ Trợ 24/7"
+    }
+  },
+  "blog": {
+    "title": "Tin tức",
+    "readMore": "Xem thêm",
+    "publishedAt": "Đăng tải lúc",
+    "by": "Bởi"
+  },
+  "errors": {
+    "notFound": "Không tìm thấy trang",
+    "serverError": "Lỗi máy chủ",
+    "unauthorized": "Truy cập bị từ chối",
+    "backToHome": "Quay về trang chủ"
+  }
+}

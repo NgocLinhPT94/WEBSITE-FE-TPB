@@ -1,0 +1,42 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "home": "Home",
+    "about": "About",
+    "blog": "Blog",
+    "contact": "Contact",
+    "readMore": "Read more",
+    "backToHome": "Back to home"
+  },
+  "seo": {
+    "siteName": "Enterprise Website",
+    "title": "Home",
+    "description": "Welcome to our enterprise website"
+  },
+  "home": {
+    "hero": {
+      "title": "Welcome to Our Enterprise",
+      "subtitle": "Building the future together"
+    },
+    "features": {
+      "title": "Our Features",
+      "item1": "Scalable Solutions",
+      "item2": "Enterprise Security",
+      "item3": "24/7 Support"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "readMore": "Read more",
+    "publishedAt": "Published at",
+    "by": "By"
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "serverError": "Server error",
+    "unauthorized": "Unauthorized access",
+    "backToHome": "Back to home"
+  }
+}

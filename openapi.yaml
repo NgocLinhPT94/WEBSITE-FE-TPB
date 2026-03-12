@@ -1,0 +1,238 @@
+openapi: 3.0.0
+info:
+  title: Strapi API
+  version: 1.0.0
+  description: API for Strapi CMS
+
+servers:
+  - url: http://localhost:1337
+    description: Development server
+
+paths:
+  /api/pages:
+    get:
+      summary: Get all pages
+      tags:
+        - Pages
+      parameters:
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageListResponse'
+  /api/pages/{id}:
+    get:
+      summary: Get a page by ID
+      tags:
+        - Pages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResponse'
+  /api/blog-posts:
+    get:
+      summary: Get all blog posts
+      tags:
+        - Blog Posts
+      parameters:
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+        - name: pagination[page]
+          in: query
+          schema:
+            type: integer
+        - name: pagination[pageSize]
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostListResponse'
+  /api/blog-posts/{id}:
+    get:
+      summary: Get a blog post by ID
+      tags:
+        - Blog Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostResponse'
+
+components:
+  schemas:
+    PageListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Page'
+        meta:
+          $ref: '#/components/schemas/Pagination'
+    PageResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Page'
+        meta:
+          type: object
+    Page:
+      type: object
+      properties:
+        id:
+          type: number
+        attributes:
+          $ref: '#/components/schemas/PageAttributes'
+    PageAttributes:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        locale:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BlogPostListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogPost'
+        meta:
+          $ref: '#/components/schemas/Pagination'
+    BlogPostResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/BlogPost'
+        meta:
+          type: object
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: number
+        attributes:
+          $ref: '#/components/schemas/BlogPostAttributes'
+    BlogPostAttributes:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        coverImage:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+        author:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+        locale:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        pageCount:
+          type: integer
+        total:
+          type: integer
