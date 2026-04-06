@@ -1,0 +1,2592 @@
+Project: website-fe-tpb
+
+=== PROJECT STRUCTURE ===
+website-fe-tpb/
+  .env.local
+  .env.production
+  .env.staging
+  .eslintrc.json
+  .gitignore
+  .prettierrc
+  build_context.py
+  next-env.d.ts
+  next.config.js
+  openapi.yaml
+  openapitools.json
+  package-lock.json
+  package.json
+  postcss.config.js
+  README.md
+  tailwind.config.js
+  tsconfig.json
+  .husky/
+    pre-commit
+    _/
+      .gitignore
+      applypatch-msg
+      commit-msg
+      h
+      husky.sh
+      post-applypatch
+      post-checkout
+      post-commit
+      post-merge
+      post-rewrite
+      pre-applypatch
+      pre-auto-gc
+      pre-commit
+      pre-push
+      pre-rebase
+      prepare-commit-msg
+  src/
+    middleware.ts
+    api/
+      client.ts
+      generated.ts
+      index.ts
+    app/
+      robots.ts
+      sitemap.ts
+      [locale]/
+        error.tsx
+        globals.css
+        layout.tsx
+        not-found.tsx
+        page.tsx
+        blog/
+          page.tsx
+          [slug]/
+            page.tsx
+    components/
+      layout/
+        ErrorBoundary.tsx
+        Footer.tsx
+        Header.tsx
+        index.ts
+        MainLayout.tsx
+      seo/
+        Seo.tsx
+      ui/
+        Button.tsx
+        Container.tsx
+        Heading.tsx
+        index.ts
+        Input.tsx
+        Text.tsx
+    config/
+      i18n/
+        index.ts
+    lib/
+      config/
+        index.ts
+      error/
+        api-error.ts
+        error-handler.ts
+      utils/
+        index.ts
+    messages/
+      en.json
+      vi.json
+    services/
+      blog.service.ts
+      index.ts
+      navigation.service.ts
+      page.service.ts
+    types/
+      api.ts
+      common.ts
+      pagination.ts
+
+=== FILES CONTENT ===
+
+--- FILE: .eslintrc.json ---
+{
+  "root": true,
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-page-custom-font": "off"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  }
+}
+
+
+--- FILE: next-env.d.ts ---
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/basic-features/typescript for more information.
+
+
+--- FILE: next.config.js ---
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./src/config/i18n/index.ts');
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+        ],
+      },
+    ];
+  },
+};
+
+module.exports = withNextIntl(nextConfig);
+
+
+--- FILE: openapi.yaml ---
+openapi: 3.0.0
+info:
+  title: Strapi API
+  version: 1.0.0
+  description: API for Strapi CMS
+
+servers:
+  - url: http://localhost:1337
+    description: Development server
+
+paths:
+  /api/pages:
+    get:
+      summary: Get all pages
+      tags:
+        - Pages
+      parameters:
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageListResponse'
+  /api/pages/{id}:
+    get:
+      summary: Get a page by ID
+      tags:
+        - Pages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResponse'
+  /api/blog-posts:
+    get:
+      summary: Get all blog posts
+      tags:
+        - Blog Posts
+      parameters:
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+        - name: pagination[page]
+          in: query
+          schema:
+            type: integer
+        - name: pagination[pageSize]
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostListResponse'
+  /api/blog-posts/{id}:
+    get:
+      summary: Get a blog post by ID
+      tags:
+        - Blog Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: locale
+          in: query
+          schema:
+            type: string
+        - name: populate
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostResponse'
+
+components:
+  schemas:
+    PageListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Page'
+        meta:
+          $ref: '#/components/schemas/Pagination'
+    PageResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Page'
+        meta:
+          type: object
+    Page:
+      type: object
+      properties:
+        id:
+          type: number
+        attributes:
+          $ref: '#/components/schemas/PageAttributes'
+    PageAttributes:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        locale:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BlogPostListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogPost'
+        meta:
+          $ref: '#/components/schemas/Pagination'
+    BlogPostResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/BlogPost'
+        meta:
+          type: object
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: number
+        attributes:
+          $ref: '#/components/schemas/BlogPostAttributes'
+    BlogPostAttributes:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        coverImage:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+        author:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+        locale:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        pageCount:
+          type: integer
+        total:
+          type: integer
+
+
+--- FILE: openapitools.json ---
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.14.0"
+  }
+}
+
+
+--- FILE: package.json ---
+{
+  "name": "enterprise-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prepare": "husky install",
+    "generate:api": "openapi-generator-cli generate -i openapi.yaml -g typescript-axios -o src/api/generated --additional-properties=typescriptThreePlus=true"  },
+  "dependencies": {
+    "@tanstack/react-query": "5.51.21",
+    "axios": "1.7.2",
+    "clsx": "2.1.1",
+    "next": "14.2.5",
+    "next-intl": "3.15.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-error-boundary": "^6.1.1",
+    "tailwind-merge": "2.4.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.13.4",
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@typescript-eslint/eslint-plugin": "7.16.0",
+    "@typescript-eslint/parser": "7.16.0",
+    "autoprefixer": "10.4.19",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.5",
+    "husky": "9.0.11",
+    "lint-staged": "15.2.7",
+    "postcss": "8.4.39",
+    "prettier": "3.3.2",
+    "tailwindcss": "3.4.4",
+    "typescript": "5.5.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
+
+
+--- FILE: postcss.config.js ---
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+
+
+--- FILE: README.md ---
+# Enterprise Frontend
+
+Production-ready enterprise frontend project built with Next.js 14, TypeScript, and Strapi CMS.
+
+## Overview
+
+A scalable, SEO-optimized web application with:
+
+- **Next.js 14** - App Router with SSR/SSG
+- **TypeScript** - Full type safety
+- **Strapi CMS** - Headless CMS integration via OpenAPI
+- **i18n** - Vietnamese (vi) and English (en) support
+- **TailwindCSS** - Utility-first styling
+- **TanStack Query** - Server state management ready
+- **Zod** - Runtime validation ready
+- **ESLint + Prettier** - Code quality
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── [locale]/               # Locale-based routing (en/vi)
+│   │   ├── layout.tsx         # Root layout with providers
+│   │   ├── page.tsx           # Home page (SSG)
+│   │   ├── error.tsx          # Error boundary
+│   │   ├── not-found.tsx      # 404 page
+│   │   └── blog/
+│   │       ├── page.tsx       # Blog listing (SSG)
+│   │       └── [slug]/        # Blog post (Dynamic)
+│   │           └── page.tsx
+│   ├── globals.css            # Global styles
+│   ├── sitemap.ts             # Dynamic sitemap
+│   └── robots.ts              # Robots.txt
+│
+├── components/
+│   ├── ui/                    # Base UI components
+│   │   ├── Button.tsx
+│   │   ├── Container.tsx
+│   │   ├── Heading.tsx
+│   │   ├── Input.tsx
+│   │   └── Text.tsx
+│   ├── layout/                # Layout components
+│   │   ├── Header.tsx
+│   │   ├── Footer.tsx
+│   │   ├── MainLayout.tsx
+│   │   └── ErrorBoundary.tsx
+│   └── seo/                   # SEO utilities
+│       └── Seo.tsx
+│
+├── services/                  # Business logic & API
+│   └── index.ts              # Strapi API services
+│
+├── hooks/                     # Custom React hooks
+│   └── index.ts
+│
+├── lib/
+│   ├── config/               # Environment config
+│   │   └── index.ts
+│   ├── error/                # Error handling
+│   │   ├── api-error.ts
+│   │   └── error-handler.ts
+│   └── utils/                # Utilities
+│       └── index.ts          # cn() - classname merge
+│
+├── messages/                  # Translation files
+│   ├── en.json
+│   └── vi.json
+│
+└── config/
+    └── i18n/                 # i18n configuration
+        └── index.ts
+```
+
+## Important Configurations
+
+### Environment Variables
+
+Create environment files in project root:
+
+```bash
+# .env.local (development)
+NEXT_PUBLIC_API_URL=http://localhost:1337
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_DEFAULT_LOCALE=en
+
+# .env.staging (staging)
+NEXT_PUBLIC_API_URL=https://api-staging.example.com
+NEXT_PUBLIC_SITE_URL=https://staging.example.com
+
+# .env.production (production)
+NEXT_PUBLIC_API_URL=https://api.example.com
+NEXT_PUBLIC_SITE_URL=https://example.com
+```
+
+### Path Aliases
+
+Configured in `tsconfig.json`:
+
+```json
+{
+  "paths": {
+    "@/*": ["./src/*"],
+    "@/components/*": ["./src/components/*"],
+    "@/api/*": ["./src/api/*"],
+    "@/services/*": ["./src/services/*"],
+    "@/hooks/*": ["./src/hooks/*"],
+    "@/lib/*": ["./src/lib/*"],
+    "@/config/*": ["./src/config/*"],
+    "@/messages/*": ["./src/messages/*"]
+  }
+}
+```
+
+### TailwindCSS Theme
+
+Extended in `tailwind.config.js`:
+- Custom primary colors
+- Container sizes
+- Font families
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Generate API client from OpenAPI (optional)
+npm run generate:api
+```
+
+### Development
+
+```bash
+# Start development server
+npm run dev
+
+# Run with custom port
+PORT=3001 npm run dev
+```
+
+Server runs at: http://localhost:3000
+
+### Production Build
+
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### Linting & Formatting
+
+```bash
+# Lint
+npm run lint
+
+# Fix lint errors
+npm run lint:fix
+
+# Check formatting
+npm run format:check
+
+# Format code
+npm run format
+```
+
+### Type Checking
+
+```bash
+npm run typecheck
+```
+
+## API Integration
+
+### OpenAPI Generator
+
+Generate TypeScript client from OpenAPI spec:
+
+```bash
+npm run generate:api
+```
+
+This reads from `openapi.yaml` and generates types to `src/api/generated/`.
+
+### Service Layer
+
+Add new services in `src/services/index.ts`:
+
+```typescript
+class PageService {
+  async getPages(locale?: string): Promise<Page[]> {
+    const response = await apiClient.get(`${env.apiUrl}/api/pages`, {
+      params: { locale },
+    });
+    return response.data.data;
+  }
+}
+
+export const pageService = new PageService();
+```
+
+### API Client Configuration
+
+Axios client with interceptors in `src/api/client.ts`:
+- Request interceptors for auth tokens
+- Response interceptors for error handling
+- Timeout configuration
+
+## Internationalization
+
+### Adding Translations
+
+1. Add keys to `src/messages/en.json` and `src/messages/vi.json`
+2. Use in components:
+
+```typescript
+// Server Component
+import { useTranslations } from 'next-intl/server';
+
+export default function Page() {
+  const t = useTranslations('common');
+  return <h1>{t('home')}</h1>;
+}
+
+// Client Component
+import { useTranslations } from 'next-intl';
+
+export function Component() {
+  const t = useTranslations('common');
+  return <h1>{t('home')}</h1>;
+}
+```
+
+### Adding New Locale
+
+1. Add locale to `src/config/i18n/index.ts`
+2. Add translation file in `src/messages/`
+3. Update middleware matcher in `src/middleware.ts`
+
+## Code Conventions
+
+### TypeScript
+
+- Always use explicit types for function parameters and return values
+- Use `interface` for object shapes, `type` for unions/aliases
+- Avoid `any`, use `unknown` when type is truly unknown
+- Prefix unused parameters with `_`
+
+```typescript
+// Good
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+}
+
+async function getPost(id: number): Promise<BlogPost | null> {
+  // implementation
+}
+
+// Unused parameter
+function handleEvent(_event: MouseEvent) {
+  // only uses default prevented
+}
+```
+
+### React Components
+
+- Use functional components with arrow functions or `function` keyword
+- Use `forwardRef` for components that need ref forwarding
+- Define prop types with explicit interface
+- Use `'use client'` directive for client components
+
+```typescript
+// Good - Server Component
+export default async function HomePage({ params }: Props) {
+  const data = await fetchData();
+  return <div>{data.title}</div>;
+}
+
+// Good - Client Component with ref
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ children, ...props }, ref) => {
+    return <button ref={ref} {...props}>{children}</button>;
+  }
+);
+```
+
+### File Naming
+
+- PascalCase for components: `BlogPost.tsx`, `Header.tsx`
+- camelCase for utilities: `cn.ts`, `api-client.ts`
+- kebab-case for configs: `next.config.js`, `postcss.config.js`
+
+### Component Structure
+
+```typescript
+// 1. Imports
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+
+// 2. Types
+interface ButtonProps {
+  variant?: 'primary' | 'secondary';
+  children: React.ReactNode;
+}
+
+// 3. Component
+export function Button({ variant = 'primary', children }: ButtonProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  return (
+    <button className={cn('btn', variant === 'primary' && 'btn-primary')}>
+      {children}
+    </button>
+  );
+}
+```
+
+### CSS / Tailwind
+
+- Use utility classes from TailwindCSS
+- Use `cn()` from `@/lib/utils` for conditional classes
+- Keep custom CSS to minimum, use Tailwind config for theming
+
+```typescript
+// Good
+<div className={cn(
+  'flex items-center justify-between',
+  isActive && 'bg-primary-100'
+)} />
+
+// Avoid
+<div style={{ display: 'flex', alignItems: 'center' }} />
+```
+
+### API Error Handling
+
+```typescript
+import { ApiError } from '@/lib/error/api-error';
+import { handleApiError, logError } from '@/lib/error/error-handler';
+
+try {
+  const data = await service.getData();
+} catch (error) {
+  const apiError = handleApiError(error);
+  logError(error, 'getData');
+  
+  if (apiError.isNotFound) {
+    notFound();
+  }
+  throw apiError;
+}
+```
+
+### Git Conventions
+
+Follow conventional commits:
+
+```bash
+# Features
+git commit -m "feat: add blog post listing"
+
+# Bug fixes
+git commit -m "fix: resolve navigation issue"
+
+# Documentation
+git commit -m "docs: update API documentation"
+
+# Refactoring
+git commit -m "refactor: simplify error handling"
+```
+
+## SEO Optimization
+
+### Metadata
+
+Use Next.js Metadata API in `page.tsx`:
+
+```typescript
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return {
+    title: 'Page Title',
+    description: 'Page description',
+    openGraph: {
+      title: 'Page Title',
+      description: 'Page description',
+      type: 'website',
+    },
+  };
+}
+```
+
+### Structured Data
+
+Add JSON-LD in components:
+
+```typescript
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Enterprise',
+    }),
+  }}
+/>
+```
+
+### Sitemap
+
+Auto-generated at `/sitemap.xml` via `src/app/sitemap.ts`
+
+## Performance
+
+### Rendering Strategies
+
+- **SSG** (`export const revalidate`): For static content (home, about)
+- **ISR**: For content that updates occasionally (blog)
+- **Dynamic**: For personalized content
+
+```typescript
+// SSG with 1 hour revalidation
+export const revalidate = 3600;
+
+// ISR - on-demand revalidation
+export const revalidate = false;
+```
+
+### Image Optimization
+
+Use Next.js Image component:
+
+```typescript
+import Image from 'next/image';
+
+<Image
+  src={post.coverImage.url}
+  alt={post.title}
+  fill
+  sizes="(max-width: 768px) 100vw, 50vw"
+/>
+```
+
+## Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+### Docker
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+## Troubleshooting
+
+### Build Errors
+
+```bash
+# Clear Next.js cache
+rm -rf .next
+
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Type Errors
+
+```bash
+# Check TypeScript
+npm run typecheck
+
+# Update TypeScript
+npm install typescript@latest
+```
+
+### API Connection
+
+Ensure Strapi is running and `.env.local` has correct `NEXT_PUBLIC_API_URL`.
+
+## Resources
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [next-intl Documentation](https://next-intl.dev/docs)
+- [TailwindCSS](https://tailwindcss.com/docs)
+- [Strapi Documentation](https://docs.strapi.io)
+
+
+--- FILE: tailwind.config.js ---
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0f9ff',
+          100: '#e0f2fe',
+          200: '#bae6fd',
+          300: '#7dd3fc',
+          400: '#38bdf8',
+          500: '#0ea5e9',
+          600: '#0284c7',
+          700: '#0369a1',
+          800: '#075985',
+          900: '#0c4a6e',
+          950: '#082f49',
+        },
+      },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
+        },
+      },
+      fontFamily: {
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+
+
+--- FILE: tsconfig.json ---
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/api/*": ["./src/api/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/config/*": ["./src/config/*"],
+      "@/i18n/*": ["./src/config/i18n/*"],
+      "@/messages/*": ["./src/messages/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
+
+--- FILE: src\middleware.ts ---
+import createMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from '@/config/i18n';
+
+export default createMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always',
+});
+
+export const config = {
+  matcher: ['/', '/(en|vi)/:path*'],
+};
+
+
+--- FILE: src\api\client.ts ---
+import axios, {
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  AxiosResponse,
+} from 'axios';
+import { env } from '@/lib/config';
+
+export interface ApiClientConfig {
+  baseURL: string;
+  timeout?: number;
+  token?: string;
+}
+
+export function createApiClient(config: ApiClientConfig): AxiosInstance {
+  const client = axios.create({
+    baseURL: config.baseURL,
+    timeout: config.timeout ?? 30000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  /* ========= REQUEST INTERCEPTOR ========= */
+  client.interceptors.request.use(
+    (request: InternalAxiosRequestConfig) => {
+      // Inject Bearer Token automatically
+      if (config.token) {
+        request.headers.Authorization = `Bearer ${config.token}`;
+      }
+
+      const locale = request.headers['X-Locale'];
+      if (locale) delete request.headers['X-Locale'];
+
+      return request;
+    },
+    error => Promise.reject(error)
+  );
+
+  /* ========= RESPONSE INTERCEPTOR ========= */
+  client.interceptors.response.use(
+    (response: AxiosResponse) => response,
+    error => Promise.reject(error)
+  );
+
+  return client;
+}
+
+/* ========= DEFAULT API CLIENT ========= */
+
+export const apiClient = createApiClient({
+  baseURL: env.apiUrl,
+  token: env.strapiApiToken,
+});
+
+export default apiClient;
+
+--- FILE: src\api\generated.ts ---
+//OpenAPI output
+
+--- FILE: src\api\index.ts ---
+export { apiClient, createApiClient, type ApiClientConfig } from './client';
+
+
+--- FILE: src\app\robots.ts ---
+import { MetadataRoute } from 'next';
+import { env } from '@/lib/config';
+
+export default function robots(): MetadataRoute.Robots {
+  const siteUrl = env.siteUrl;
+
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: '/api/',
+    },
+    sitemap: `${siteUrl}/sitemap.xml`,
+  };
+}
+
+
+--- FILE: src\app\sitemap.ts ---
+import { MetadataRoute } from 'next';
+import { env } from '@/lib/config';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const siteUrl = env.siteUrl;
+
+  return [
+    {
+      url: siteUrl,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: `${siteUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+  ];
+}
+
+
+--- FILE: src\app\[locale]\error.tsx ---
+'use client';
+
+import { useEffect } from 'react';
+import { Button, Heading, Text, Container } from '@/components/ui';
+import { useTranslations } from 'next-intl';
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  const t = useTranslations('errors');
+
+  useEffect(() => {
+    console.error('Global error:', error);
+  }, [error]);
+
+  return (
+    <html>
+      <body>
+        <Container className="flex min-h-screen flex-col items-center justify-center text-center">
+          <Heading level={1} className="mb-4">
+            {t('serverError')}
+          </Heading>
+          <Text variant="muted" className="mb-8 max-w-md">
+            {error.message || t('serverError')}
+          </Text>
+          <Button onClick={reset}>{t('retry')}</Button>
+        </Container>
+      </body>
+    </html>
+  );
+}
+
+
+--- FILE: src\app\[locale]\globals.css ---
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: Georgia, Cambria, 'Times New Roman', Times, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply antialiased;
+}
+
+* {
+  @apply border-gray-200;
+}
+
+.dark * {
+  @apply border-gray-700;
+}
+
+
+--- FILE: src\app\[locale]\layout.tsx ---
+import { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { locales, type Locale } from '@/config/i18n';
+import { MainLayout } from '@/components/layout';
+import './globals.css';
+
+type Props = {
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleLayout({ children, params }: Props) {
+  const { locale } = await params;
+  
+  if (!locales.includes(locale as Locale)) {
+    notFound();
+  }
+
+  setRequestLocale(locale);
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider messages={messages}>
+          <MainLayout>{children}</MainLayout>
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+
+
+--- FILE: src\app\[locale]\not-found.tsx ---
+import { notFound } from 'next/navigation';
+import { Button, Heading, Text, Container } from '@/components/ui';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+
+export default function NotFound() {
+  const t = useTranslations('errors');
+
+  return (
+    <Container className="flex min-h-screen flex-col items-center justify-center text-center">
+      <Heading level={1} className="mb-4">
+        {t('notFound')}
+      </Heading>
+      <Text variant="muted" className="mb-8">
+        {t('notFound')}
+      </Text>
+      <Link href="/">
+        <Button>{t('backToHome')}</Button>
+      </Link>
+    </Container>
+  );
+}
+
+
+--- FILE: src\app\[locale]\page.tsx ---
+import { Metadata } from 'next';
+import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { Container, Heading, Text } from '@/components/ui';
+import { locales } from '@/config/i18n';
+
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export const revalidate = 3600;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return {
+    title: {
+      default: 'Enterprise Website',
+      template: '%s | Enterprise Website',
+    },
+    description: 'Welcome to our enterprise website',
+  };
+}
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+export default async function HomePage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  return (
+    <Container>
+      <section className="py-20 text-center">
+        <Heading level={1} className="mb-4">
+          Welcome to Our Enterprise
+        </Heading>
+        <Text size="lg" variant="muted" className="max-w-2xl mx-auto mb-8">
+          Building the future together with innovative solutions for your business.
+        </Text>
+      </section>
+
+      <section className="py-16">
+        <Heading level={2} className="mb-8 text-center">
+          Our Features
+        </Heading>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            'Scalable Solutions',
+            'Enterprise Security',
+            '24/7 Support',
+          ].map((feature) => (
+            <div
+              key={feature}
+              className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg"
+            >
+              <Heading level={3} className="mb-2">
+                {feature}
+              </Heading>
+              <Text variant="muted">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              </Text>
+            </div>
+          ))}
+        </div>
+      </section>
+    </Container>
+  );
+}
+
+
+--- FILE: src\app\[locale]\blog\page.tsx ---
+import { Metadata } from 'next';
+import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { Container, Heading, Text, Button } from '@/components/ui';
+import { blogPostService } from '@/services';
+import { locales } from '@/config/i18n';
+import Link from 'next/link';
+import Image from 'next/image';
+
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export const revalidate = 600;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return {
+    title: {
+      default: 'Blog',
+      template: '%s | Blog',
+    },
+    description: 'Latest news and updates',
+  };
+}
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+async function getBlogPosts(locale: string) {
+  try {
+    const result = await blogPostService.getBlogPosts(locale, {
+      page: 1,
+      pageSize: 6,
+      sort: 'publishedAt:desc',
+    });
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return [];
+  }
+}
+
+export default async function BlogPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const posts = await getBlogPosts(locale);
+
+  return (
+    <Container>
+      <section className="py-12">
+        <Heading level={1} className="mb-4">
+          Blog
+        </Heading>
+        <Text variant="muted" className="mb-12 max-w-2xl">
+          Latest news and updates from our team.
+        </Text>
+
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post) => (
+              <article
+                key={post.id}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700"
+              >
+                {post.coverImage?.url && (
+                  <div className="relative h-48 w-full">
+                    <Image
+                      src={post.coverImage.url}
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
+                  <Heading level={3} className="mb-2 line-clamp-2">
+                    {post.title}
+                  </Heading>
+                  <Text variant="muted" size="sm" className="mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </Text>
+                  <div className="flex items-center justify-between">
+                    <Text size="sm" variant="muted">
+                      {new Date(post.publishedAt).toLocaleDateString()}
+                    </Text>
+                    <Link href={`/blog/${post.slug}`}>
+                      <Button size="sm">Read more</Button>
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Text variant="muted">No posts found.</Text>
+          </div>
+        )}
+      </section>
+    </Container>
+  );
+}
+
+
+--- FILE: src\app\[locale]\blog\[slug]\page.tsx ---
+import { Metadata } from 'next';
+import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { Container, Heading, Text } from '@/components/ui';
+import { blogPostService } from '@/services';
+import { locales } from '@/config/i18n';
+import Image from 'next/image';
+
+type Props = {
+  params: Promise<{ locale: string; slug: string }>;
+};
+
+export const revalidate = 600;
+
+export const dynamicParams = true;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const post = await blogPostService.getBlogPostBySlug(slug, locale);
+  
+  if (!post) {
+    return {
+      title: 'Not Found',
+      description: 'Page not found',
+    };
+  }
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      publishedTime: post.publishedAt,
+      authors: post.author?.name ? [post.author.name] : undefined,
+      images: post.coverImage?.url ? [post.coverImage.url] : [],
+    },
+  };
+}
+
+async function getBlogPost(slug: string, locale: string) {
+  try {
+    const post = await blogPostService.getBlogPostBySlug(slug, locale);
+    return post;
+  } catch (error) {
+    console.error('Error fetching blog post:', error);
+    return null;
+  }
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
+  const post = await getBlogPost(slug, locale);
+
+  if (!post) {
+    notFound();
+  }
+
+  return (
+    <Container>
+      <article className="py-12">
+        <header className="mb-8">
+          <Heading level={1} className="mb-4">
+            {post.title}
+          </Heading>
+          <div className="flex items-center space-x-4 text-gray-600 dark:text-gray-400">
+            {post.author?.name && (
+              <Text size="sm">By {post.author.name}</Text>
+            )}
+            <Text size="sm">
+              {new Date(post.publishedAt).toLocaleDateString()}
+            </Text>
+          </div>
+        </header>
+
+        {post.coverImage?.url && (
+          <div className="relative w-full h-96 mb-8 rounded-lg overflow-hidden">
+            <Image
+              src={post.coverImage.url}
+              alt={post.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
+
+        <div className="prose prose-lg max-w-none">
+          <Text size="lg">{post.content}</Text>
+        </div>
+      </article>
+    </Container>
+  );
+}
+
+
+--- FILE: src\components\layout\ErrorBoundary.tsx ---
+'use client';
+
+import { ErrorBoundary as ReactErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { useTranslations } from 'next-intl';
+import { Button, Heading, Text, Container } from '@/components/ui';
+
+function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  const t = useTranslations('errors');
+
+  return (
+    <Container className="flex min-h-screen flex-col items-center justify-center text-center">
+      <Heading level={1} className="mb-4">
+        {t('serverError')}
+      </Heading>
+      <Text variant="muted" className="mb-8 max-w-md">
+        {error instanceof Error ? error.message : t('serverError')}
+      </Text>
+      <Button onClick={resetErrorBoundary}>{t('retry')}</Button>
+    </Container>
+  );
+}
+
+export function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <ReactErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onReset={() => {
+        window.location.reload();
+      }}
+    >
+      {children}
+    </ReactErrorBoundary>
+  );
+}
+
+
+--- FILE: src\components\layout\Footer.tsx ---
+import Link from 'next/link';
+import { Container, Text } from '@/components/ui';
+import { env } from '@/lib/config';
+
+export function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+      <Container>
+        <div className="py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Enterprise</h3>
+            <Text variant="muted" size="sm">
+              Building the future together with innovative solutions.
+            </Text>
+          </div>
+          <div>
+            <h4 className="font-medium mb-4">Quick Links</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-medium mb-4">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-gray-600 dark:text-gray-400 hover:text-primary-600">
+                  Terms of Service
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-medium mb-4">Contact</h4>
+            <Text variant="muted" size="sm">
+              contact@enterprise.com
+              <br />
+              +1 (555) 123-4567
+            </Text>
+          </div>
+        </div>
+        <div className="py-4 border-t border-gray-200 dark:border-gray-800 text-center">
+          <Text variant="muted" size="sm">
+            &copy; {currentYear} Enterprise. All rights reserved.
+          </Text>
+        </div>
+      </Container>
+    </footer>
+  );
+}
+
+
+--- FILE: src\components\layout\Header.tsx ---
+import Link from 'next/link';
+import { navigationService } from '@/services';
+import { Container } from '@/components/ui';
+
+export async function Header() {
+  const menu = await navigationService.getHeaderMenu('header');
+
+  return (
+    <header className="border-b bg-white">
+      <Container>
+        <nav className="flex h-16 items-center justify-between">
+          {/* LOGO */}
+          <Link
+            href="/"
+            className="text-xl font-bold text-primary-600"
+          >
+            TPBank
+          </Link>
+
+          {/* MENU */}
+          <ul className="flex gap-6">
+            {menu
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map(item => (
+                <li key={item.id} className="relative group">
+                  {/* LEVEL 1 */}
+                  <Link
+                    href={item.url}
+                    className="hover:text-primary-600"
+                  >
+                    {item.title}
+                  </Link>
+
+                  {/* LEVEL 2 */}
+                  {item.children?.length ? (
+                    <ul className="absolute left-0 top-full hidden min-w-[220px] bg-white shadow group-hover:block">
+                      {item.children.map(child => (
+                        <li key={child.id} className="relative">
+                          <Link
+                            href={child.url}
+                            className="block px-4 py-2 hover:bg-gray-100"
+                          >
+                            {child.title}
+                          </Link>
+
+                          {/* LEVEL 3 */}
+                          {child.children?.length ? (
+                            <ul className="absolute left-full top-0 hidden min-w-[220px] bg-white shadow group-hover:block">
+                              {child.children.map(sub => (
+                                <li key={sub.id}>
+                                  <Link
+                                    href={sub.url}
+                                    className="block px-4 py-2 hover:bg-gray-100"
+                                  >
+                                    {sub.title}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              ))}
+          </ul>
+        </nav>
+      </Container>
+    </header>
+  );
+}
+
+--- FILE: src\components\layout\index.ts ---
+export { Header } from './Header';
+export { Footer } from './Footer';
+export { MainLayout } from './MainLayout';
+export { ErrorBoundary } from './ErrorBoundary';
+
+
+--- FILE: src\components\layout\MainLayout.tsx ---
+import { ReactNode } from 'react';
+import { Header } from './Header';
+import { Footer } from './Footer';
+
+interface MainLayoutProps {
+  children: ReactNode;
+}
+
+export function MainLayout({ children }: MainLayoutProps) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow">{children}</main>
+      <Footer />
+    </div>
+  );
+}
+
+
+--- FILE: src\components\seo\Seo.tsx ---
+import { Metadata } from 'next';
+import { env } from '@/lib/config';
+
+interface SeoProps {
+  title?: string;
+  description?: string;
+  image?: string;
+  url?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  author?: string;
+  locale?: string;
+}
+
+export function generateMetadata({
+  title,
+  description,
+  image,
+  url,
+  type = 'website',
+  locale = 'en',
+}: SeoProps): Metadata {
+  const siteName = env.siteUrl.replace(/^https?:\/\//, '');
+  const defaultTitle = title ? `${title} | ${siteName}` : siteName;
+
+  return {
+    title: defaultTitle,
+    description,
+    openGraph: {
+      title: defaultTitle,
+      description,
+      type,
+      url: url ? `${env.siteUrl}${url}` : env.siteUrl,
+      siteName: siteName,
+      images: image
+        ? [
+            {
+              url: image.startsWith('http') ? image : `${env.siteUrl}${image}`,
+              width: 1200,
+              height: 630,
+            },
+          ]
+        : [],
+      locale: locale === 'vi' ? 'vi_VN' : 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: defaultTitle,
+      description,
+      images: image ? [image] : [],
+    },
+    alternates: {
+      canonical: url ? `${env.siteUrl}${url}` : env.siteUrl,
+      languages: {
+        en: `${env.siteUrl}/en${url ?? ''}`,
+        vi: `${env.siteUrl}/vi${url ?? ''}`,
+      },
+    },
+  };
+}
+
+export function generateJsonLd({
+  type,
+  data,
+}: {
+  type: 'Organization' | 'WebSite' | 'Article' | 'BreadcrumbList';
+  data: Record<string, unknown>;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': type,
+    ...data,
+  };
+}
+
+
+--- FILE: src\components\ui\Button.tsx ---
+import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+}
+
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
+    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
+    const variants = {
+      primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
+      secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
+      outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
+      ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
+      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    };
+
+    const sizes = {
+      sm: 'px-3 py-1.5 text-sm',
+      md: 'px-4 py-2 text-base',
+      lg: 'px-6 py-3 text-lg',
+    };
+
+    return (
+      <button
+        ref={ref}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        disabled={disabled || isLoading}
+        {...props}
+      >
+        {isLoading && (
+          <svg
+            className="animate-spin -ml-1 mr-2 h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        )}
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button';
+
+export { Button };
+
+
+--- FILE: src\components\ui\Container.tsx ---
+import { ComponentProps, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface ContainerProps extends ComponentProps<'div'> {
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+}
+
+const sizes: Record<string, string> = {
+  sm: 'max-w-3xl',
+  md: 'max-w-4xl',
+  lg: 'max-w-6xl',
+  xl: 'max-w-7xl',
+  full: 'max-w-full',
+};
+
+const Container = forwardRef<HTMLDivElement, ContainerProps>(
+  ({ className, size = 'lg', children, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn('mx-auto px-4 sm:px-6 lg:px-8', sizes[size], className)}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+Container.displayName = 'Container';
+
+export { Container };
+
+
+--- FILE: src\components\ui\Heading.tsx ---
+import { ComponentProps, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface HeadingProps extends ComponentProps<'h1'> {
+  level?: HeadingLevel;
+}
+
+const sizes: Record<HeadingLevel, string> = {
+  1: 'text-4xl md:text-5xl lg:text-6xl font-bold',
+  2: 'text-3xl md:text-4xl font-bold',
+  3: 'text-2xl md:text-3xl font-semibold',
+  4: 'text-xl md:text-2xl font-semibold',
+  5: 'text-lg md:text-xl font-medium',
+  6: 'text-base md:text-lg font-medium',
+};
+
+const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(
+  ({ className, level = 1, children, ...props }, ref) => {
+    const Tag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+    return (
+      <Tag
+        ref={ref}
+        className={cn(sizes[level], 'text-gray-900 dark:text-white', className)}
+        {...props}
+      >
+        {children}
+      </Tag>
+    );
+  }
+);
+
+Heading.displayName = 'Heading';
+
+export { Heading };
+
+
+--- FILE: src\components\ui\index.ts ---
+export { Button, type ButtonProps } from './Button';
+export { Container, type ContainerProps } from './Container';
+export { Heading, type HeadingProps } from './Heading';
+export { Text, type TextProps } from './Text';
+export { Input, type InputProps } from './Input';
+
+
+--- FILE: src\components\ui\Input.tsx ---
+import { InputHTMLAttributes, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  helperText?: string;
+}
+
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ className, label, error, helperText, id, ...props }, ref) => {
+    const inputId = id || props.name;
+
+    return (
+      <div className="w-full">
+        {label && (
+          <label
+            htmlFor={inputId}
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            {label}
+          </label>
+        )}
+        <input
+          ref={ref}
+          id={inputId}
+          className={cn(
+            'w-full px-3 py-2 border rounded-lg text-gray-900 dark:text-white',
+            'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+            'disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed',
+            error
+              ? 'border-red-500 focus:ring-red-500'
+              : 'border-gray-300 dark:border-gray-600',
+            className
+          )}
+          {...props}
+        />
+        {error && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+        {helperText && !error && (
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{helperText}</p>
+        )}
+      </div>
+    );
+  }
+);
+
+Input.displayName = 'Input';
+
+export { Input };
+
+
+--- FILE: src\components\ui\Text.tsx ---
+import { ComponentProps, forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface TextProps extends ComponentProps<'p'> {
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'muted' | 'primary';
+}
+
+const sizes: Record<string, string> = {
+  sm: 'text-sm',
+  md: 'text-base',
+  lg: 'text-lg',
+};
+
+const variants: Record<string, string> = {
+  default: 'text-gray-900 dark:text-white',
+  muted: 'text-gray-600 dark:text-gray-400',
+  primary: 'text-primary-600 dark:text-primary-400',
+};
+
+const Text = forwardRef<HTMLParagraphElement, TextProps>(
+  ({ className, size = 'md', variant = 'default', children, ...props }, ref) => {
+    return (
+      <p
+        ref={ref}
+        className={cn(sizes[size], variants[variant], className)}
+        {...props}
+      >
+        {children}
+      </p>
+    );
+  }
+);
+
+Text.displayName = 'Text';
+
+export { Text };
+
+
+--- FILE: src\config\i18n\index.ts ---
+import { getRequestConfig } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+
+export const locales = ['en', 'vi'] as const;
+export type Locale = (typeof locales)[number];
+export const defaultLocale: Locale = 'en';
+
+export default getRequestConfig(async ({ locale }) => {
+  if (!locales.includes(locale as Locale)) notFound();
+
+  return {
+    messages: (await import(`@/messages/${locale}.json`)).default,
+  };
+});
+
+
+--- FILE: src\lib\config\index.ts ---
+export const env = {
+  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:1337',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  defaultLocale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
+
+  /**
+   * Server-only secrets * (DO NOT expose to client)
+   */
+  strapiApiToken: process.env.STRAPI_API_TOKEN,
+} as const;
+
+export type Env = typeof env;
+
+--- FILE: src\lib\error\api-error.ts ---
+export class ApiError extends Error {
+  public readonly statusCode: number;
+  public readonly code?: string;
+  public readonly details?: unknown;
+
+  constructor(message: string, statusCode: number, code?: string, details?: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+  }
+
+  static fromAxiosError(error: unknown): ApiError {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as {
+        response?: {
+          status: number;
+          data?: { message?: string; error?: { message?: string } };
+        };
+        message?: string;
+      };
+      const statusCode = axiosError.response?.status ?? 500;
+      const message =
+        axiosError.response?.data?.message ??
+        axiosError.response?.data?.error?.message ??
+        axiosError.message ??
+        'An unexpected error occurred';
+      return new ApiError(message, statusCode);
+    }
+    return new ApiError('Network error', 0);
+  }
+
+  get isNetworkError(): boolean {
+    return this.statusCode === 0;
+  }
+
+  get isUnauthorized(): boolean {
+    return this.statusCode === 401;
+  }
+
+  get isForbidden(): boolean {
+    return this.statusCode === 403;
+  }
+
+  get isNotFound(): boolean {
+    return this.statusCode === 404;
+  }
+
+  get isServerError(): boolean {
+    return this.statusCode >= 500;
+  }
+}
+
+
+--- FILE: src\lib\error\error-handler.ts ---
+import { ApiError } from './api-error';
+
+export function handleApiError(error: unknown): ApiError {
+  if (error instanceof ApiError) {
+    return error;
+  }
+  return ApiError.fromAxiosError(error);
+}
+
+export function logError(error: unknown, context?: string): void {
+  const errorInfo = {
+    timestamp: new Date().toISOString(),
+    context,
+    error: error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    } : error,
+  };
+  console.error('[ERROR]', JSON.stringify(errorInfo, null, 2));
+}
+
+export function getErrorMessage(error: unknown, fallback = 'An error occurred'): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return fallback;
+}
+
+
+--- FILE: src\lib\utils\index.ts ---
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+
+--- FILE: src\messages\en.json ---
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "home": "Home",
+    "about": "About",
+    "blog": "Blog",
+    "contact": "Contact",
+    "readMore": "Read more",
+    "backToHome": "Back to home"
+  },
+  "seo": {
+    "siteName": "Enterprise Website",
+    "title": "Home",
+    "description": "Welcome to our enterprise website"
+  },
+  "home": {
+    "hero": {
+      "title": "Welcome to Our Enterprise",
+      "subtitle": "Building the future together"
+    },
+    "features": {
+      "title": "Our Features",
+      "item1": "Scalable Solutions",
+      "item2": "Enterprise Security",
+      "item3": "24/7 Support"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "readMore": "Read more",
+    "publishedAt": "Published at",
+    "by": "By"
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "serverError": "Server error",
+    "unauthorized": "Unauthorized access",
+    "backToHome": "Back to home"
+  }
+}
+
+
+--- FILE: src\messages\vi.json ---
+{
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "retry": "Thử lại",
+    "home": "Trang chủ",
+    "about": "Giới thiệu",
+    "blog": "Tin tức",
+    "contact": "Liên hệ",
+    "readMore": "Xem thêm",
+    "backToHome": "Quay về trang chủ"
+  },
+  "seo": {
+    "siteName": "Doanh Nghiệp",
+    "title": "Trang chủ",
+    "description": "Chào mừng đến với website doanh nghiệp của chúng tôi"
+  },
+  "home": {
+    "hero": {
+      "title": "Chào Mừng Đến Với Doanh Nghiệp Của Chúng Tôi",
+      "subtitle": "Xây dựng tương lai cùng nhau"
+    },
+    "features": {
+      "title": "Tính Năng Của Chúng Tôi",
+      "item1": "Giải Pháp Mở Rộng",
+      "item2": "Bảo Mật Doanh Nghiệp",
+      "item3": "Hỗ Trợ 24/7"
+    }
+  },
+  "blog": {
+    "title": "Tin tức",
+    "readMore": "Xem thêm",
+    "publishedAt": "Đăng tải lúc",
+    "by": "Bởi"
+  },
+  "errors": {
+    "notFound": "Không tìm thấy trang",
+    "serverError": "Lỗi máy chủ",
+    "unauthorized": "Truy cập bị từ chối",
+    "backToHome": "Quay về trang chủ"
+  }
+}
+
+
+--- FILE: src\services\blog.service.ts ---
+import { env } from '@/lib/config';
+import { apiClient } from '@/api';
+
+export interface ListResponse<T> {
+    data: T[];
+    meta: {
+      pagination: {
+        page: number;
+        pageSize: number;
+        pageCount: number;
+        total: number;
+      };
+    };
+  }
+export interface BlogPost {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt: string;
+    content: string;
+    coverImage?: {
+      url: string;
+    };
+    author?: {
+      name: string;
+    };
+    locale: string;
+    publishedAt: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+  
+  export interface PaginationParams {
+    page?: number;
+    pageSize?: number;
+    sort?: string;
+  }
+  export interface ApiResponse<T> {
+    data: T;
+  }
+export class BlogPostService {
+    async getBlogPosts(
+      locale?: string,
+      params?: PaginationParams
+    ): Promise<ListResponse<BlogPost>> {
+      const queryParams: Record<string, string | number> = {};
+      if (locale) queryParams.locale = locale;
+      if (params?.page) queryParams['pagination[page]'] = params.page;
+      if (params?.pageSize) queryParams['pagination[pageSize]'] = params.pageSize;
+      if (params?.sort) queryParams.sort = params.sort;
+      queryParams.populate = '*';
+  
+      const response = await apiClient.get<ListResponse<BlogPost>>(
+        `${env.apiUrl}/api/blog-posts`,
+        { params: queryParams }
+      );
+      return response.data;
+    }
+  
+    async getBlogPost(
+      id: number,
+      locale?: string,
+      populate?: string
+    ): Promise<BlogPost> {
+      const params: Record<string, string> = {};
+      if (locale) params.locale = locale;
+      if (populate) params.populate = populate;
+  
+      const response = await apiClient.get<{ data: BlogPost }>(
+        `${env.apiUrl}/api/blog-posts/${id}`,
+        { params }
+      );
+      return response.data.data;
+    }
+  
+    async getBlogPostBySlug(slug: string, locale?: string): Promise<BlogPost | null> {
+      const params: Record<string, string> = {
+        'filters[slug][$eq]': slug,
+        populate: '*',
+      };
+      if (locale) params.locale = locale;
+  
+      const response = await apiClient.get<{ data: BlogPost[] }>(
+        `${env.apiUrl}/api/blog-posts`,
+        { params }
+      );
+      return response.data.data[0] ?? null;
+    }
+  }
+  export const blogPostService = new BlogPostService();
+
+--- FILE: src\services\index.ts ---
+
+export { blogPostService } from './blog.service'
+export { pageService } from './page.service'
+export { navigationService } from './navigation.service'; //Menu header + footer
+
+
+
+--- FILE: src\services\navigation.service.ts ---
+import { apiClient } from '@/api';
+
+
+export interface NavigationItem {
+    id: number;
+    title: string;
+    url: string;
+    order: number | null;
+    children?: NavigationItem[];
+}
+
+export interface NavigationResponse {
+    data: NavigationItem[];
+}
+
+/* ===================== * Service * ===================== */
+
+class NavigationService {
+    async getHeaderMenu(
+        type: 'header' | 'footer'
+    ): Promise<NavigationItem[]> {
+        const response = await apiClient.get<NavigationResponse>(
+            '/api/navigation-items',
+            {
+                params: {
+                    'filters[navigation][type_menu][$eq]': type,
+                    'filters[parent][$null]': true,
+                    'populate[children][populate]': 'children',
+                },
+            }
+        );
+
+        return response.data.data;
+    }
+
+    async getFooterMenu(): Promise<NavigationItem[]> {
+        const response = await apiClient.get<NavigationResponse>(
+            '/api/navigation-items',
+            {
+                params: {
+                    'filters[navigation][type_menu][$eq]': 'footer',
+                    'filters[parent][$null]': true,
+                    'populate[children][populate]': 'children',
+                },
+            }
+        );
+
+        return response.data.data;
+    }
+
+}
+export const navigationService = new NavigationService();
+
+
+
+--- FILE: src\services\page.service.ts ---
+import { apiClient } from '@/api';
+import { env } from '@/lib/config';
+export interface Page {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    locale: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+export class PageService {
+    async getPages(locale?: string, populate?: string): Promise<Page[]> {
+      const params: Record<string, string> = {};
+      if (locale) params.locale = locale;
+      if (populate) params.populate = populate;
+  
+      const response = await apiClient.get<{ data: Page[] }>(
+        `${env.apiUrl}/api/pages`,
+        { params }
+      );
+      return response.data.data;
+    }
+  
+    async getPage(id: number, locale?: string, populate?: string): Promise<Page> {
+      const params: Record<string, string> = {};
+      if (locale) params.locale = locale;
+      if (populate) params.populate = populate;
+  
+      const response = await apiClient.get<{ data: Page }>(
+        `${env.apiUrl}/api/pages/${id}`,
+        { params }
+      );
+      return response.data.data;
+    }
+  
+    async getPageBySlug(slug: string, locale?: string): Promise<Page | null> {
+      const params: Record<string, string> = {
+        'filters[slug][$eq]': slug,
+      };
+      if (locale) params.locale = locale;
+  
+      const response = await apiClient.get<{ data: Page[] }>(
+        `${env.apiUrl}/api/pages`,
+        { params }
+      );
+      return response.data.data[0] ?? null;
+    }
+  }
+  
+export const pageService = new PageService();
+
+--- FILE: src\types\api.ts ---
+
+
+--- FILE: src\types\common.ts ---
+
+
+--- FILE: src\types\pagination.ts ---
+
+

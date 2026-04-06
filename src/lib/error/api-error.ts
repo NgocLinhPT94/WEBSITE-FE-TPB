@@ -32,6 +32,7 @@ export class ApiError extends Error {
   }
 
   get isNetworkError(): boolean {
+    // backend down / ECONNREFUSED / timeout
     return this.statusCode === 0;
   }
 

@@ -4,6 +4,7 @@ import { env } from '@/lib/config';
 export interface ApiClientConfig {
   baseURL: string;
   timeout?: number;
+  token?: string;
 }
 
 export function createApiClient(config: ApiClientConfig): AxiosInstance {
@@ -15,41 +16,36 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
     },
   });
 
+  /* ========= REQUEST INTERCEPTOR ========= */
   client.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-      const locale = config.headers['X-Locale'] as string | undefined;
-      if (locale) {
-        delete config.headers['X-Locale'];
+    (request: InternalAxiosRequestConfig) => {
+      // Inject Bearer Token automatically
+      if (config.token) {
+        request.headers.Authorization = `Bearer ${config.token}`;
       }
-      return config;
+
+      const locale = request.headers['X-Locale'];
+      if (locale) delete request.headers['X-Locale'];
+
+      return request;
     },
     (error) => Promise.reject(error)
   );
 
+  /* ========= RESPONSE INTERCEPTOR ========= */
   client.interceptors.response.use(
     (response: AxiosResponse) => response,
-    (error) => {
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            break;
-          case 403:
-            break;
-          case 404:
-            break;
-          case 500:
-            break;
-        }
-      }
-      return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
   );
 
   return client;
 }
 
+/* ========= DEFAULT API CLIENT ========= */
+
 export const apiClient = createApiClient({
   baseURL: env.apiUrl,
+  token: env.strapiApiToken,
 });
 
 export default apiClient;

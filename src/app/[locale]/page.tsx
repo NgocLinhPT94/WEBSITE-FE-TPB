@@ -12,10 +12,10 @@ export const revalidate = 3600;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: {
-      default: 'Enterprise Website',
-      template: '%s | Enterprise Website',
+      default: 'Ngân hàng TMCP TPBank',
+      template: '%s | Website TPBank',
     },
-    description: 'Welcome to our enterprise website',
+    description: 'Trang chủ Khách hàng cá nhân',
   };
 }
 
@@ -43,21 +43,12 @@ export default async function HomePage({ params }: Props) {
           Our Features
         </Heading>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            'Scalable Solutions',
-            'Enterprise Security',
-            '24/7 Support',
-          ].map((feature) => (
-            <div
-              key={feature}
-              className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg"
-            >
+          {['Scalable Solutions', 'Enterprise Security', '24/7 Support'].map((feature) => (
+            <div key={feature} className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <Heading level={3} className="mb-2">
                 {feature}
               </Heading>
-              <Text variant="muted">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              </Text>
+              <Text variant="muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</Text>
             </div>
           ))}
         </div>
