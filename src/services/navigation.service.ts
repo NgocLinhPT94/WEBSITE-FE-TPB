@@ -23,6 +23,15 @@ export interface IconShareItem {
   icon: string | null;
 }
 
+/* ---------- BUTTON SHARE ---------- */
+
+export interface ButtonShareItem {
+  id: number;
+  label: string;
+  url: string;
+  style: string;
+}
+
 /* =====================================================
  * STRAPI RESPONSE TYPES
  * ===================================================== */
@@ -43,10 +52,18 @@ interface StrapiIconShare {
   icon?: StrapiMedia | null;
 }
 
+interface StrapiButtonShare {
+  id: number;
+  label: string;
+  url: string;
+  style: string;
+}
+
 interface NavigationEntity {
   id: number;
   type_menu: 'header' | 'footer';
   iconshare: StrapiIconShare[];
+  ButtonShare: StrapiButtonShare[];
 }
 
 interface NavigationIconResponse {
@@ -121,8 +138,33 @@ class NavigationService {
     }
   }
 
+  /* ================= Button================= */
+
+  async getNavigationButton(type: 'header' | 'footer'): Promise<ButtonShareItem[]> {
+    try {
+      const response = await apiClient.get<NavigationIconResponse>('/api/navigations', {
+        params: {
+          'filters[type_menu][$eq]': type,
+          'populate[ButtonShare][populate]': '*',
+        },
+      });
+
+      const navigation = response.data.data?.[0];
+
+      if (!navigation) return [];
+
+      return navigation.ButtonShare ?? [];
+    } catch (error) {
+      throw ApiError.fromAxiosError(error);
+    }
+  }
+
   getHeaderIcons() {
     return this.getNavigationIcons('header');
+  }
+
+  getHeaderButton() {
+    return this.getNavigationButton('header');
   }
 
   getFooterIcons() {

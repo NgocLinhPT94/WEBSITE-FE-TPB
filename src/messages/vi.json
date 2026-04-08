@@ -38,5 +38,9 @@
     "serverError": "Lỗi máy chủ",
     "unauthorized": "Truy cập bị từ chối",
     "backToHome": "Quay về trang chủ"
+  },
+  "header": {
+    "login": "Đăng nhập",
+    "loginApp": "Đăng ký tài khoản online"
   }
 }
